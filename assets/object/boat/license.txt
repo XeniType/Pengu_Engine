@@ -1,0 +1,11 @@
+Model Information:
+* title:	Fishing Boat III
+* source:	https://sketchfab.com/3d-models/fishing-boat-iii-ade40638aaa14c708e6eac1e98022f63
+* author:	gogiart (https://sketchfab.com/agt14032013)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Fishing Boat III" (https://sketchfab.com/3d-models/fishing-boat-iii-ade40638aaa14c708e6eac1e98022f63) by gogiart (https://sketchfab.com/agt14032013) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

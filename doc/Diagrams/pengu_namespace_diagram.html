@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Pengu Engine — Namespace Map</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet"/>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:       #0a0c10;
+  --surface:  #111520;
+  --surface2: #0d1018;
+  --border:   #1e2535;
+  --engine:   #4fffb0;
+  --scene:    #4f9fff;
+  --renderer: #ff6b6b;
+  --pipeline: #ffcc4f;
+  --resource: #b44fff;
+  --ecs:      #4fc8ff;
+  --comp:     #8899bb;
+  --ui:       #e879f9;
+  --muted:    #4a5568;
+  --text:     #c8d0e0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'JetBrains Mono', monospace;
+  min-height: 100vh;
+  padding: 40px 20px 80px;
+}
+
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image:
+    linear-gradient(rgba(79,255,176,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(79,255,176,0.025) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.wrapper {
+  position: relative;
+  z-index: 1;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+/* ── Header ── */
+header { text-align: center; margin-bottom: 56px; animation: fadeIn 0.5s ease both; }
+header h1 { font-family: 'Syne', sans-serif; font-weight: 800; font-size: clamp(1.8rem, 4vw, 3rem); color: #fff; }
+header h1 span { color: var(--engine); }
+header p { margin-top: 6px; color: var(--muted); font-size: 0.72rem; letter-spacing: 0.15em; text-transform: uppercase; }
+
+@keyframes fadeIn { from { opacity:0; transform:translateY(-10px); } to { opacity:1; transform:none; } }
+
+/* ── Root namespace wrapper ── */
+.root-box {
+  border: 1.5px solid var(--engine);
+  border-radius: 12px;
+  padding: 28px 24px 32px;
+  position: relative;
+  box-shadow: 0 0 40px rgba(79,255,176,0.06), inset 0 0 60px rgba(79,255,176,0.015);
+  animation: fadeIn 0.5s 0.1s ease both;
+}
+
+.root-label {
+  position: absolute;
+  top: -13px; left: 20px;
+  background: var(--bg);
+  padding: 2px 12px;
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 0.8rem;
+  color: var(--engine);
+  letter-spacing: 0.08em;
+  border: 1px solid var(--engine);
+  border-radius: 4px;
+}
+
+/* ── Top row: Core + Scene + UI ── */
+.top-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+/* ── Mid row: 3 columns ── */
+.mid-row {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+/* ── Bot row: 3 columns ── */
+.bot-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+}
+
+/* ── Namespace card ── */
+.ns-card {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  padding: 14px 16px 16px;
+  position: relative;
+  transition: transform 0.18s, box-shadow 0.18s;
+}
+.ns-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.4);
+}
+
+.ns-name {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  margin-bottom: 2px;
+}
+
+.ns-path {
+  font-size: 0.6rem;
+  color: var(--muted);
+  letter-spacing: 0.06em;
+  margin-bottom: 10px;
+}
+
+/* colour themes per namespace */
+.ns-core     { border-color: #1e3a2e; } .ns-core     .ns-name { color: var(--engine); }
+.ns-core     .ns-tag { background: var(--engine); color: #000; }
+.ns-scene    { border-color: #1e2e3a; } .ns-scene    .ns-name { color: var(--scene); }
+.ns-scene    .ns-tag { background: var(--scene); color: #000; }
+.ns-renderer { border-color: #3a1e1e; } .ns-renderer .ns-name { color: var(--renderer); }
+.ns-renderer .ns-tag { background: var(--renderer); color: #fff; }
+.ns-pipeline { border-color: #3a2e1e; } .ns-pipeline .ns-name { color: var(--pipeline); }
+.ns-pipeline .ns-tag { background: var(--pipeline); color: #000; }
+.ns-resource { border-color: #2a1e3a; } .ns-resource .ns-name { color: var(--resource); }
+.ns-resource .ns-tag { background: var(--resource); color: #fff; }
+.ns-ecs      { border-color: #1e2e3a; } .ns-ecs      .ns-name { color: var(--ecs); }
+.ns-ecs      .ns-tag { background: var(--ecs); color: #000; }
+.ns-comp     { border-color: #252a38; } .ns-comp     .ns-name { color: var(--comp); }
+.ns-comp     .ns-tag { background: var(--comp); color: #000; }
+.ns-gpu      { border-color: #252a38; } .ns-gpu      .ns-name { color: #7090c0; }
+.ns-gpu      .ns-tag { background: #7090c0; color: #000; }
+.ns-ui       { border-color: #3a1e3a; } .ns-ui       .ns-name { color: var(--ui); }
+.ns-ui       .ns-tag { background: var(--ui); color: #000; }
+
+/* tag pill */
+.ns-tag {
+  position: absolute;
+  top: -10px; right: 12px;
+  font-size: 0.55rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 3px;
+}
+
+/* class list */
+.class-list { list-style: none; }
+.class-list li {
+  font-size: 0.68rem;
+  padding: 3px 0 3px 8px;
+  border-left: 2px solid rgba(255,255,255,0.07);
+  color: var(--text);
+  line-height: 1.5;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+.class-list li .kind {
+  font-size: 0.55rem;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+.class-list li .fwd {
+  font-size: 0.55rem;
+  color: #ffcc4f99;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+/* nested sub-card (Rendering inside Graphics) */
+.sub-card {
+  margin-top: 12px;
+  border: 1px dashed #2a3a28;
+  border-radius: 6px;
+  padding: 10px 12px 12px;
+  position: relative;
+  background: rgba(79,255,176,0.02);
+}
+.sub-card-label {
+  position: absolute;
+  top: -9px; left: 10px;
+  background: var(--surface);
+  font-size: 0.58rem;
+  color: var(--pipeline);
+  padding: 1px 8px;
+  border: 1px solid #3a2e1e;
+  border-radius: 3px;
+  letter-spacing: 0.06em;
+}
+
+/* ── Frame flow strip ── */
+.flow-strip {
+  margin-top: 28px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 18px 20px;
+  background: var(--surface2);
+}
+.flow-title {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 0.75rem;
+  color: #fff;
+  margin-bottom: 14px;
+  letter-spacing: 0.04em;
+}
+.flow-chain {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.flow-node {
+  padding: 5px 12px;
+  border-radius: 5px;
+  font-size: 0.65rem;
+  border: 1px solid;
+}
+.flow-arrow { color: var(--muted); font-size: 0.75rem; }
+
+/* ── Forward-decl legend ── */
+.fwd-legend {
+  margin-top: 16px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 18px 20px;
+  background: var(--surface2);
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 20px;
+}
+
+.fwd-section h3 {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  color: var(--text);
+}
+
+.fwd-row {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  margin-bottom: 7px;
+  font-size: 0.67rem;
+  line-height: 1.5;
+}
+.badge {
+  flex-shrink: 0;
+  font-size: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 1px 6px;
+  border-radius: 3px;
+  margin-top: 1px;
+}
+.ok   { background: rgba(79,255,176,0.12); color: #4fffb0; border: 1px solid #4fffb044; }
+.no   { background: rgba(255,107,107,0.12); color: #ff6b6b; border: 1px solid #ff6b6b44; }
+
+code {
+  background: rgba(255,255,255,0.05);
+  border-radius: 3px;
+  padding: 0 4px;
+  font-size: 0.62rem;
+  color: #aabbcc;
+}
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+<header>
+  <h1>Pengu<span>Engine</span></h1>
+  <p>namespace architecture map</p>
+</header>
+
+<!-- ══ Root namespace ══ -->
+<div class="root-box">
+  <div class="root-label">namespace Pengu { … }</div>
+
+  <!-- Row 1: Core + Scene -->
+  <div class="top-row">
+
+    <!-- Core -->
+    <div class="ns-card ns-core">
+      <div class="ns-tag">Core</div>
+      <div class="ns-name">Pengu::Core</div>
+      <div class="ns-path">Engine.hpp · Window.hpp · Timer.hpp</div>
+      <ul class="class-list">
+        <li><span>Engine</span><span class="kind">class</span><span class="fwd">owns all</span></li>
+        <li><span>Window</span><span class="kind">class</span></li>
+        <li><span>Timer</span><span class="kind">class</span></li>
+        <li><span>Logger</span><span class="kind">class</span></li>
+        <li><span>EventBus</span><span class="kind">class</span></li>
+      </ul>
+    </div>
+
+    <!-- Scene -->
+    <div class="ns-card ns-scene">
+      <div class="ns-tag">World</div>
+      <div class="ns-name">Pengu::Scene</div>
+      <div class="ns-path">SceneBase.hpp · SceneManager.hpp</div>
+      <ul class="class-list">
+        <li><span>SceneBase</span><span class="kind">abstract</span><span class="fwd">fwd ✓</span></li>
+        <li><span>SceneManager</span><span class="kind">class</span></li>
+        <li><span>SceneGraph</span><span class="kind">class</span></li>
+      </ul>
+    </div>
+
+    <!-- UI -->
+    <div class="ns-card ns-ui">
+      <div class="ns-tag">Editor</div>
+      <div class="ns-name">Pengu::UI</div>
+      <div class="ns-path">EngineUI.h</div>
+      <ul class="class-list">
+        <li><span>EditorState</span><span class="kind">struct</span><span class="fwd">owns all</span></li>
+        <li><span>Entity</span><span class="kind">struct</span></li>
+        <li><span>Scene</span><span class="kind">struct</span></li>
+        <li><span>RenderPipeline</span><span class="kind">enum class</span></li>
+        <li><span>PipelineSettings</span><span class="kind">struct</span></li>
+        <li><span>Init()</span><span class="kind">fn</span></li>
+        <li><span>Render()</span><span class="kind">fn</span><span class="fwd">per-frame</span></li>
+      </ul>
+    </div>
+
+  </div>
+
+  <!-- Row 2: Graphics (+ nested Rendering) + ECS + Resources -->
+  <div class="mid-row">
+
+    <!-- Graphics + Rendering nested -->
+    <div class="ns-card ns-renderer">
+      <div class="ns-tag">Graphics</div>
+      <div class="ns-name">Pengu::Graphics</div>
+      <div class="ns-path">Camera.hpp · Shader.hpp · Texture.hpp · Mesh.hpp · Material.hpp</div>
+      <ul class="class-list">
+        <li><span>Camera</span><span class="kind">class</span><span class="fwd">fwd ✓</span></li>
+        <li><span>Shader</span><span class="kind">class</span><span class="fwd">fwd ✓</span></li>
+        <li><span>Texture</span><span class="kind">class</span><span class="fwd">fwd ✓</span></li>
+        <li><span>Mesh</span><span class="kind">class</span><span class="fwd">fwd ✓</span></li>
+        <li><span>Material</span><span class="kind">class</span><span class="fwd">fwd ✓</span></li>
+        <li><span>Renderer</span><span class="kind">class</span></li>
+      </ul>
+
+      <!-- Nested Rendering sub-namespace -->
+      <div class="sub-card">
+        <div class="sub-card-label">Pengu::Graphics::Rendering</div>
+        <ul class="class-list" style="margin-top:6px;">
+          <li><span>RenderPipeline</span><span class="kind">abstract</span></li>
+          <li><span>UnlitPipeline</span><span class="kind">: RenderPipeline</span></li>
+          <li><span>ForwardPipeline</span><span class="kind">: RenderPipeline</span></li>
+          <li><span>ShadowPipeline</span><span class="kind">: RenderPipeline</span></li>
+          <li><span>DeferredPipeline</span><span class="kind">: RenderPipeline</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ECS -->
+    <div class="ns-card ns-ecs">
+      <div class="ns-tag">ECS</div>
+      <div class="ns-name">Pengu::ECS</div>
+      <div class="ns-path">World.hpp · Entity.hpp · System.hpp</div>
+      <ul class="class-list">
+        <li><span>World</span><span class="kind">class</span></li>
+        <li><span>Entity</span><span class="kind">class</span></li>
+        <li><span>System</span><span class="kind">abstract</span></li>
+        <li><span>SystemManager</span><span class="kind">class</span></li>
+        <li><span>Registry</span><span class="kind">class</span></li>
+      </ul>
+    </div>
+
+    <!-- Resources -->
+    <div class="ns-card ns-resource">
+      <div class="ns-tag">Assets</div>
+      <div class="ns-name">Pengu::Resources</div>
+      <div class="ns-path">ResourceManager.hpp · AssetLoader.hpp</div>
+      <ul class="class-list">
+        <li><span>ResourceManager</span><span class="kind">class</span><span class="fwd">fwd ✓</span></li>
+        <li><span>AssetLoader</span><span class="kind">class</span></li>
+        <li><span>ShaderLibrary</span><span class="kind">class</span></li>
+        <li><span>AssetCache</span><span class="kind">class</span></li>
+      </ul>
+    </div>
+
+  </div>
+
+  <!-- Row 3: Components + GPU Resources + (spare) -->
+  <div class="bot-row">
+
+    <!-- Components -->
+    <div class="ns-card ns-comp">
+      <div class="ns-tag">Components</div>
+      <div class="ns-name">Pengu::Components</div>
+      <div class="ns-path">TransformComponent.hpp · DrawableComponent.hpp …</div>
+      <ul class="class-list">
+        <li><span>TransformComponent</span><span class="kind">struct</span><span class="fwd">fwd ✓</span></li>
+        <li><span>DrawableComponent</span><span class="kind">struct</span><span class="fwd">fwd ✓</span></li>
+        <li><span>LightComponent</span><span class="kind">struct</span><span class="fwd">fwd ✓</span></li>
+        <li><span>CameraComponent</span><span class="kind">struct</span></li>
+      </ul>
+    </div>
+
+    <!-- GPU Resources (owned by Scene/ECS) -->
+    <div class="ns-card ns-gpu">
+      <div class="ns-tag">GPU Owned</div>
+      <div class="ns-name">Pengu::Graphics</div>
+      <div class="ns-path">GPU resource ownership</div>
+      <ul class="class-list">
+        <li><code>shared_ptr&lt;Mesh&gt;</code><span class="fwd">Scene entities</span></li>
+        <li><code>shared_ptr&lt;Shader&gt;</code><span class="fwd">Scene entities</span></li>
+        <li><code>shared_ptr&lt;Texture&gt;</code><span class="fwd">Scene entities</span></li>
+        <li><code>shared_ptr&lt;Material&gt;</code><span class="fwd">Scene entities</span></li>
+        <li><code>weak_ptr&lt;T&gt;</code><span class="fwd">ResourceManager cache</span></li>
+      </ul>
+    </div>
+
+    <!-- GameObject -->
+    <div class="ns-card ns-scene">
+      <div class="ns-tag">Objects</div>
+      <div class="ns-name">Pengu::Scene</div>
+      <div class="ns-path">GameObject.hpp</div>
+      <ul class="class-list">
+        <li><span>GameObject</span><span class="kind">class</span></li>
+        <li><code>shared_ptr&lt;GameObject&gt;</code></li>
+        <li style="margin-top:6px; border-left-color:transparent; font-size:0.6rem; color:var(--muted); padding-left:0;">held by DrawableComponent<br>owned by ECS World</li>
+      </ul>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══ Frame loop with namespaces ══ -->
+<div class="flow-strip">
+  <div class="flow-title">Frame Loop — with namespaces</div>
+  <div class="flow-chain">
+    <div class="flow-node" style="border-color:var(--ui); color:var(--ui);">Pengu::UI::EngineUI::Render()</div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-node" style="border-color:var(--engine); color:var(--engine);">Pengu::Core::Engine::update()</div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-node" style="border-color:var(--renderer); color:var(--renderer);">Pengu::Graphics::Renderer::render(scene, cam)</div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-node" style="border-color:var(--pipeline); color:var(--pipeline);">Pengu::Graphics::Rendering::Pipeline::render()</div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-node" style="border-color:var(--ecs); color:var(--ecs);">Pengu::ECS::World::getEntitiesWith&lt;T&gt;()</div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-node" style="border-color:#334; color:var(--comp);">glDrawElements()</div>
+  </div>
+</div>
+
+<!-- ══ Forward declaration guide ══ -->
+<div class="fwd-legend">
+
+  <div class="fwd-section">
+    <h3>Forward declare in headers (fwd ✓)</h3>
+    <div class="fwd-row"><span class="badge ok">OK</span><span><code>ResourceManager&amp;</code> in Pipeline::init() — only a reference</span></div>
+    <div class="fwd-row"><span class="badge ok">OK</span><span><code>SceneBase&amp;</code> in Pipeline::render() — only a reference</span></div>
+    <div class="fwd-row"><span class="badge ok">OK</span><span><code>Camera&amp;</code> in Pipeline::render() — only a reference</span></div>
+    <div class="fwd-row"><span class="badge ok">OK</span><span><code>TransformComponent&amp;</code> in buildModelMatrix() — only a reference</span></div>
+    <div class="fwd-row"><span class="badge ok">OK</span><span><code>shared_ptr&lt;Shader&gt;</code> member — smart pointer</span></div>
+    <div class="fwd-row"><span class="badge ok">OK</span><span><code>EditorState&amp;</code> in engine tick — only a reference</span></div>
+  </div>
+
+  <div class="fwd-section">
+    <h3>Must include in header</h3>
+    <div class="fwd-row"><span class="badge no">NO</span><span><code>RenderPipeline</code> — Pipeline inherits from it</span></div>
+    <div class="fwd-row"><span class="badge no">NO</span><span>Any type stored by value as a member</span></div>
+    <div class="fwd-row"><span class="badge no">NO</span><span><code>glm::mat4</code> — value member, needs size</span></div>
+  </div>
+
+  <div class="fwd-section">
+    <h3>Forward declaration syntax</h3>
+    <div style="background:rgba(0,0,0,0.3); border:1px solid #1e2535; border-radius:6px; padding:12px; font-size:0.62rem; line-height:2; color:#aabbcc;">
+      <span style="color:var(--muted);">// In UnlitPipeline.hpp</span><br>
+      <span style="color:#4f9fff;">namespace</span> Pengu::Resources   { <span style="color:#4f9fff;">class</span> <span style="color:var(--resource);">ResourceManager</span>; }<br>
+      <span style="color:#4f9fff;">namespace</span> Pengu::Scene       { <span style="color:#4f9fff;">class</span> <span style="color:var(--scene);">SceneBase</span>; }<br>
+      <span style="color:#4f9fff;">namespace</span> Pengu::Graphics    { <span style="color:#4f9fff;">class</span> <span style="color:var(--renderer);">Camera</span>; <span style="color:#4f9fff;">class</span> <span style="color:var(--renderer);">Shader</span>; }<br>
+      <span style="color:#4f9fff;">namespace</span> Pengu::Components  { <span style="color:#4f9fff;">struct</span> <span style="color:var(--comp);">TransformComponent</span>; <span style="color:#4f9fff;">struct</span> <span style="color:var(--comp);">DrawableComponent</span>; }<br>
+      <span style="color:#4f9fff;">namespace</span> Pengu::UI          { <span style="color:#4f9fff;">struct</span> <span style="color:var(--ui);">EditorState</span>; }
+    </div>
+  </div>
+
+</div>
+
+</div>
+</body>
+</html>

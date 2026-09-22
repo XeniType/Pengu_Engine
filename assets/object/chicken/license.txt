@@ -1,0 +1,11 @@
+Model Information:
+* title:	Hen tie
+* source:	https://sketchfab.com/3d-models/hen-tie-ddb3fabfd9d74a1db1d817858bc32f67
+* author:	TenderMeatPopsicle (https://sketchfab.com/salvation188)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Hen tie" (https://sketchfab.com/3d-models/hen-tie-ddb3fabfd9d74a1db1d817858bc32f67) by TenderMeatPopsicle (https://sketchfab.com/salvation188) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

@@ -1,0 +1,222 @@
+
+Adjunto la auditoría del repositorio del alumno Kaelin Joaquín Lind (equipo individual), motor Pengu_Engine.
+
+Repositorio: https://github.com/KJ-Lind/3_PMG_25-26_lind
+Commit: 04afe4083020f94b17cd994f4298ddf3a9cea862 (Fixed ECS delete issues and optimized it a little)
+
+================================================================
+AVISO PRELIMINAR — DISCREPANCIA CON LA PROPUESTA DE EQUIPO
+================================================================
+
+La propuesta del alumno declaraba: "Sistema de Renderizado de Terreno (procedural + vegetación) + SSR para reflexión de agua".
+
+Estado real en el commit:
+
+- src/common/Objects/terrain.cpp e include/common/Pengu_Engine/Objects/terrain.hpp están VACÍOS (1 línea cada uno), commiteados como placeholders.
+- NO existe sistema de vegetación.
+- NO existe pipeline ni shaders de SSR.
+- NO existe primitiva ni shader de agua.
+
+Lo entregado es un mini-motor con Forward / Forward+Shadows / Deferred genéricos, scripting Lua y editor ImGui — NINGUNA de las features prometidas. Esto es un punto extra-rúbrica importante (a criterio del profesor, -3 a -5 adicionales sugeridos).
+
+================================================================
+PENALIZACIÓN TOTAL ESTIMADA: -23 / -43
+================================================================
+
+A criterio del profesor pueden añadirse hasta -5 adicionales por incumplimiento de propuesta + bugs latentes graves.
+
+Desglose por categoría de la rúbrica:
+
+  1. Gestión de memoria        -1 / -5
+  2. RAII                      -3 / -5
+  3. SRP                       -1 / -3
+  4. ECS / Job System          -2 / -3
+  5. Documentación             -1 / -2
+  6. Gestión de errores        -2 / -3
+  7. Concurrencia               0 / -3
+  8. OpenGL DSA                -2 / -2  (máxima)
+  9. Warnings                  -3 / -4
+ 10. Const-correctness         -1 / -1  (máxima)
+ 11. Código limpio             -2 / -3
+ 12. Naming                    -1 / -2
+ 13. Acoplamiento              -1 / -2
+ 14. Performance               -1 / -2
+ 15. C++ moderno               -1 / -2
+ 16. Build system              -1 / -1  (máxima)
+                              -----
+ TOTAL                         -23 / -43
+
+================================================================
+HALLAZGOS PRINCIPALES POR CATEGORÍA
+================================================================
+
+1. GESTIÓN DE MEMORIA (-1)
+- Sin new/delete raw en código del alumno.
+- ResourceManager cachea std::weak_ptr sin dueño persistente — entries expiran inmediatamente por el bug de move-from-shared (ver críticos).
+
+2. RAII (-3)
+- Shader.hpp:75-84: tiene move-ctor pero NO move-assign, y ~Shader() { unbind(); } NO llama glDeleteProgram(s_id). Leak del program GL.
+- Shader::s_id (Shader.hpp:83) sin inicializar.
+- Mesh: move-ctor sin move-assign; rule-of-five incompleta.
+- Texture (Texture.hpp:7-20) sin rule-of-five — copia/move por defecto duplican IDs.
+- Sin factory + std::optional.
+
+3. SRP (-1)
+- EngineUI.cpp (541 líneas, único > 500) hace inspector, hierarchy, content browser, profiler, menú, iconos. God UI.
+
+4. ECS / JOB SYSTEM (-2)
+- JobSystem implementado pero NUNCA invocado fuera de tests/examples. 0 usos productivos.
+
+5. DOCUMENTACIÓN (-1)
+- README muy escueto (13 líneas). Doxygen presente en algunas APIs, otras sin documentar.
+- doc/UserMan/EngineGuide.md y diagramas → positivo, compensa parte.
+
+6. GESTIÓN DE ERRORES (-2)
+- glewInit() (PenguEngine.cpp:118) sin verificar retorno.
+- Shader::load ignora silenciosamente fallos (Shader.cpp:19-22).
+- Deferred.cpp:94 std::cout en vez de Logger/abort.
+- glGetError aparece 0 veces.
+- Sin std::expected.
+
+7. CONCURRENCIA (0)
+- std::thread/mutex SOLO dentro del JobSystem. Cumple regla.
+
+8. OPENGL DSA (-2, máxima)
+- ForwardShadPipeline::setupShadowMap (ForwardShad.cpp:162-186) usa DSA correctamente — perfecto.
+- Pero Texture::LoadFromFile (Texture.cpp:35-46), Mesh::uploadToGPU (Mesh.cpp:80-111), DeferredPipeline::setupBuffer (Deferred.cpp:59-96) y setupQuad TODO legacy.
+- Texture::Bind usa glActiveTexture+glBindTexture en vez de glBindTextureUnit.
+- El alumno conoce DSA pero no lo aplicó en código central.
+
+9. WARNINGS (-3)
+- premake5.lua y stage_premake5.lua sin warnings "Extra" ni FatalWarnings.
+
+10. CONST-CORRECTNESS (-1, máxima)
+- Mesh::Draw, Camera::getViewMatrix/getPosition, Material::Bind, ECSManager::HasComponent/GetComponent no son const.
+
+11. CÓDIGO LIMPIO (-2)
+- JobSystem.cpp:12-17 bloque de move-ops comentado.
+- EngineUI.cpp:447-460 código muerto inalcanzable después de un return tex; (6 líneas).
+- PenguEngine.cpp:49 código comentado.
+- EngineUI.cpp:196-197, 147, 163, 168, 184: comentarios "// FIX 1", "// FIX 2".
+- EngineUI.cpp:366-368 ImGui::Columns DUPLICADO.
+- std::cout productivo: PenguEngine.cpp:133-134, Deferred.cpp:95.
+- stb_image.h DUPLICADO en dos rutas.
+- Archivos vacíos commiteados (terrain, viewport widget) como pista falsa de funcionalidad.
+
+12. NAMING (-1)
+- Mezcla camelCase (getViewMatrix) con PascalCase (Bind, Draw, LoadFromFile, CreatePrespective).
+- Set_CamSpeed/Get_CamSpeed snake_case-y-PascalCase a la vez.
+- Typo: "CreatePrespective" debería ser "Perspective" en Camera.hpp:64, Camera.cpp:10, PenguEngine.cpp:55, 129.
+- Mezcla m_, _, sin sufijo.
+
+13. ACOPLAMIENTO (-1)
+- Singletons disfrazados en Inputs/Input.cpp:6-24: 8 static globales (g_windowToInput, keyDown, keyPressed, mouseX/Y/DX/DY/scrollX/Y).
+- Logger con 3 static shared_ptr globales (Logger.cpp:4-6).
+
+14. PERFORMANCE (-1)
+- ForwardPipeline::render (Forward.cpp:67-96): por cada luz vuelve a setear view/projection/viewPos uniforms. View no cambia.
+- EngineUI::drawContentBrowser itera filesystem cada frame.
+
+15. C++ MODERNO (-1)
+- cppdialect "C++20" en lugar de C++23.
+- ~70 C-style casts.
+- std::cout para errores, sin std::expected ni std::span.
+
+16. BUILD SYSTEM (-1, máxima)
+- premake5.lua y stage_premake5.lua casi idénticos coexistiendo — confuso.
+- C++20, sin warnings/FatalWarnings.
+- example_project(...) comentadas en líneas 86-91 → ejemplos rotos.
+
+================================================================
+SMELLS, BUGS LATENTES Y CONSTRUCCIONES EXTRAÑAS
+================================================================
+
+CRÍTICOS
+
+· SubMeshes rompe el sharing de Mesh y Material — GameObject.cpp:7:
+    subMeshes.push_back({ std::move(*mesh), std::move(*mat) });
+  Mueve el contenido apuntado por shared_ptr dentro de un struct que almacena Mesh por valor. Tras addSubMesh el Mesh que vive en ResourceManager queda vacío (VAO/VBO/EBO movidos a 0). La caché pierde efectividad. Bug grave de arquitectura.
+
+· DeferredPipeline::deleteBuffers libera todo con glDeleteFramebuffers — Deferred.cpp:101-107:
+    glDeleteFramebuffers(1, &m_gPosition);   // es una textura
+    glDeleteFramebuffers(1, &m_gNormal);     // es una textura
+    glDeleteFramebuffers(1, &m_gColorSpec);  // es una textura
+    glDeleteFramebuffers(1, &m_rboDepth);    // es un renderbuffer
+  Texturas G-buffer y renderbuffer SE FILTRAN en cada cleanup()/onResize(). m_quadVAO/m_quadVBO no se liberan nunca.
+
+· Renderer::render guardia null/init mal escrita — Renderer.cpp:50:
+    if (!m_pipeline && m_pipeline->isInitialized()) {
+  Debería ser ||. Lógica muerta + null-deref latente.
+
+· DeferredPipeline::lightPass no acumula correctamente las luces — Deferred.cpp:221-239: el for(auto& ld : lights) sólo llama bindLight(). El renderQuad() está FUERA del bucle. Sólo la última luz se aplica.
+
+· internalFormat inválido — Texture.cpp:31:
+    internalFormat = GL_R; // no existe; debería ser GL_R8
+  Si llega imagen de 1 canal → glTexImage2D falla silenciosamente.
+
+· EngineUI::loadIcons código muerto inalcanzable — EngineUI.cpp:450-460: la lambda hace return tex; y a continuación tiene 6 líneas (glGenTextures/glBindTexture y un return nullptr) inalcanzables. Si tex es nullptr, m_icons[...]->getID() desreferencia null.
+
+· Input::keyboardCallback lógica de release incorrecta — Input.cpp:76-81:
+    else if (action == GLFW_RELEASE) {
+        keyPressed[(Action)key] = true;   // no tiene sentido
+        keyDown[(Action)key]   = false;
+        keyPressed[(Action)key] = false;  // sobreescribe
+    }
+  Además NO actualiza keyReleased — isReleased(...) nunca devolverá true.
+
+· Shader sin destructor que libere el program — Shader.hpp:81: ~Shader() { unbind(); } no llama glDeleteProgram(s_id). Leak masivo de programs en GPU.
+
+MODERADOS
+
+· Shader::s_id sin inicializar — Shader.hpp:83. Si load() falla, lee basura.
+
+· Camera::m_presp_* miembros sin inicializar — Camera.hpp:120-124.
+
+· DeferredPipeline::m_quadVBO sin inicializar — Deferred.hpp:71. glDeleteBuffers con basura si setupQuad falla.
+
+· Shadow map no se libera en ForwardShadPipeline::cleanup — destroyLightShadowMap definido en ForwardShad.cpp:120 pero NUNCA se llama.
+
+· PenguEngine::startEngine retorna por valor con glfwSetWindowUserPointer apuntando al engine local — PenguEngine.cpp:158. Si NRVO no aplica, GLFW guarda puntero a variable destruida.
+
+· Scene::update crea entidades por keypress sin tope — Scene.cpp:11-21. Memory growth no acotado.
+
+· Captura de Input* crudo por valor en Lua callbacks — ScriptSystem.cpp:156-161. Si Input se destruye antes que lua_State, dangling.
+
+· (Action)key sin verificar rango — Input.cpp:73, 78. Enum value indefinido.
+
+MENORES
+
+· stb_image.h DUPLICADO en src/common/Misc/stb_imager/ y include/common/Pengu_Engine/Misc/stb/.
+· Comparación signed/unsigned en JobSystem.cpp:6.
+· ImGui::Columns duplicado en EngineUI.cpp:366-368.
+· #include <iostream> sin uso en Shader.cpp:3.
+· tagMap_ no se actualiza cuando se cambia tag desde editor — EngineUI.cpp:175.
+· Lights() {}; punto y coma extra — LightComponent.hpp:15.
+· glm::abs(t.rotation_.y) > 0.99f — el campo se llama rotation_ pero se usa como dirección.
+· Lights::direction_ campo muerto, nunca se usa.
+· refreshRenderables se llama DESPUÉS del render — un frame de retraso.
+· #pragma once mezclado con include guards.
+
+================================================================
+VEREDICTO GLOBAL
+================================================================
+
+Trabajo de un alumno individual con esfuerzo razonable: ECS básico funcional, scripting Lua bien integrado, editor ImGui completo, tres pipelines de render, sombras direccional/spot con DSA correcta, JobSystem implementado en aislado.
+
+PUNTOS FUERTES:
+- Shadow map y JobSystem son código sólido y moderno.
+- Arquitectura general (Engine/Scene/Renderer/Pipeline) bien separada.
+- Uso correcto de std::optional/smart pointers en la creación del engine.
+
+PUNTOS DÉBILES SERIOS:
+1. Bug crítico de move-from-shared-pointee en GameObject::addSubMesh que rompe el caching de meshes/materiales en todo el motor.
+2. Bug en DeferredPipeline::deleteBuffers (todo con glDeleteFramebuffers) y en lightPass (renderQuad fuera del loop).
+3. RAII de Shader incompleta (leak de programs).
+4. Inconsistencia DSA/legacy en código central (Mesh, Texture, Deferred).
+5. Warnings no activados.
+6. La feature distintiva propuesta (terreno procedural + vegetación + SSR + agua) NO existe.
+
+Penalización rúbrica: -23 / -43
+A criterio del profesor: -3 a -5 adicionales sugeridos por incumplimiento de propuesta y bugs latentes.
+
+Documento completo en: VGP-3PMG/2526/ai/auditoria-lind.md

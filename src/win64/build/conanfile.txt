@@ -1,0 +1,24 @@
+[requires]
+#Windows and Input
+glfw/3.4
+glew/2.2.0
+glm/1.0.1
+
+#Asset loader
+assimp/6.0.2
+
+#Script embedding
+sol2/3.5.0
+
+#Logger
+spdlog/1.17.0
+
+#Physics
+#bullet3/3.25
+
+[generators]
+PremakeDeps
+PremakeToolchain
+
+[options]
+qt/*:shared=True
